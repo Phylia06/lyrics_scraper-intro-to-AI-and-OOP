@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lyrics Scraper Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="container">
+    <h1>Lyrics Finder 🎤</h1>
+
+    <form method="POST" class="lyrics-form">
+        <input type="text" id="artist" name="artist" placeholder="Enter Artist Name" required>
+        <input type="text" id="song" name="song" placeholder="Enter Song Title" required>
+        <button type="submit">Get Lyrics</button>
+    </form>
+
+    {% if message %}
+        <p class="alert">{{ message }}</p>
+    {% endif %}
+
+    {% if lyrics %}
+    <div class="lyrics-container">
+        <pre class="prec">{{ lyrics }}</pre>
+    </div>
+    {% endif %}
+
+    <!-- Genre Selection -->
+    <div class="genre-buttons">
+        <h2>Pick a Genre</h2>
+        <a href="/genre/rap"><button>Rap</button></a>
+        <a href="/genre/pop"><button>Pop</button></a>
+        <a href="/genre/rnb"><button>R&B</button></a>
+        <a href="/genre/rock"><button>Rock</button></a>
+        <a href="/genre/country"><button>Country</button></a>
+    </div>
+
+    {% if songs %}
+    <h2>Songs in {{ selected_genre.title() }} Genre:</h2>
+    <ul>
+        {% for song in songs %}
+            <li>{{ song }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+</div>
+
+<button onclick="listenForSong()">🎙️ Speak</button>
+
+<script>
+    function listenForSong() {
+        const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            const pattern = /(.+?) by (.+)/i;
+            const match = transcript.match(pattern);
+
+            if (match) {
+                document.querySelector('input[name="song"]').value = match[1].trim();
+                document.querySelector('input[name="artist"]').value = match[2].trim();
+            } else {
+                alert("Please say your song like this: 'Shape of You by Ed Sheeran'");
+            }
+        };
+
+        recognition.onerror = (e) => alert("Error: " + e.error);
+        recognition.start();
+    }
+</script>
+
+
+</body>
+</html>
